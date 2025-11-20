@@ -144,30 +144,6 @@ class NoteViewSetTest(APITestCase):
         self.assertEqual(Note.objects.count(), 1)
         self.assertFalse(Note.objects.filter(pk=self.note1.pk).exists())
 
-    def test_get_todos_for_note(self):
-        """Test the get_todos action to retrieve the todos of a note"""
-        Todo.objects.create(title="Todo 1", note=self.note1)
-        Todo.objects.create(title="Todo 2", note=self.note1)
-        Todo.objects.create(title="Todo 3", note=self.note2)  # Todo of another note
-        
-        url = reverse('notes-get-todos', kwargs={'pk': self.note1.pk})
-        response = self.client.get(url)
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
-        todo_titles = [todo['title'] for todo in response.data]
-        self.assertIn('Todo 1', todo_titles)
-        self.assertIn('Todo 2', todo_titles)
-        self.assertNotIn('Todo 3', todo_titles)
-
-    def test_get_todos_for_note_without_todos(self):
-        """Test the get_todos action for a note without todos"""
-        url = reverse('notes-get-todos', kwargs={'pk': self.note1.pk})
-        response = self.client.get(url)
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 0)
-
     def test_create_note_validation(self):
         """Test the validation during the creation"""
         url = reverse('notes-list')
@@ -176,7 +152,7 @@ class NoteViewSetTest(APITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('title', response.data)
+        self.assertIn('title', response.data['errors'])
 
     def test_delete_note_sets_related_todos_to_null(self):
         """Deleting a note should not delete todos but reset their FK."""

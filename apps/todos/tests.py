@@ -241,7 +241,7 @@ class TodoViewSetTest(APITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('title', response.data)
+        self.assertIn('title', response.data['errors'])
 
     def test_todo_status_choices_validation(self):
         """Should reject invalid status values."""
@@ -253,7 +253,7 @@ class TodoViewSetTest(APITestCase):
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('status', response.data)
+        self.assertIn('status', response.data['errors'])
 
     def test_create_todo_with_unknown_note(self):
         """Should fail when the note foreign key does not exist."""
@@ -265,7 +265,7 @@ class TodoViewSetTest(APITestCase):
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('note', response.data)
+        self.assertIn('note', response.data['errors'])
 
     def test_reassign_todo_to_another_note(self):
         """Should allow reassigning a todo to another note."""
@@ -282,3 +282,27 @@ class TodoViewSetTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.todo1.refresh_from_db()
         self.assertEqual(self.todo1.note, new_note)
+
+    def test_by_note_action_returns_only_matching_todos(self):
+        """Should return todos filtered by note id."""
+        other_note = Note.objects.create(title="Note bis", content="Texte")
+        Todo.objects.create(title="Orphan", note=other_note)
+
+        url = reverse('todos-by-note')
+        response = self.client.get(url, {'note': self.note.pk})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['id'], self.todo1.pk)
+
+    def test_by_note_action_requires_note_param(self):
+        """Should return 400 when the note parameter is missing or invalid."""
+        url = reverse('todos-by-note')
+
+        response_missing = self.client.get(url)
+        self.assertEqual(response_missing.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('note', response_missing.data['errors'])
+
+        response_invalid = self.client.get(url, {'note': 'abc'})
+        self.assertEqual(response_invalid.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('note', response_invalid.data['errors'])

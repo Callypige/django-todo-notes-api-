@@ -1,4 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .models import Todo
 from .serializers import TodoSerializer
@@ -17,3 +19,33 @@ class TodoViewSet(viewsets.ModelViewSet):
 
     queryset = Todo.objects.select_related("note").all()
     serializer_class = TodoSerializer
+
+    @action(detail=False, methods=["get"], url_path="by-note")
+    @extend_schema(summary="List todos linked to a note", description="Return all todos attached to the given note id.")
+    def by_note(self, request):
+        """Return todos filtered by note id."""
+        note_param = request.query_params.get("note")
+        if note_param is None:
+            return Response(
+                {
+                    "detail": "Query parameter 'note' is required.",
+                    "code": "missing_note_param",
+                    "errors": {"note": ["This query parameter is required."]},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            note_id = int(note_param)
+        except (TypeError, ValueError):
+            return Response(
+                {
+                    "detail": "Query parameter 'note' must be an integer.",
+                    "code": "invalid_note_param",
+                    "errors": {"note": ["This query parameter must be an integer."]},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        todos = self.get_queryset().filter(note_id=note_id)
+        serializer = self.get_serializer(todos, many=True)
+        return Response(serializer.data)
