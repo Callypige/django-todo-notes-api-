@@ -35,7 +35,7 @@ class TodoModelTest(TestCase):
             status=TodoStatus.IN_PROGRESS
         )
         self.assertIn("Ma Todo", str(todo))
-        self.assertIn("In Progress", str(todo))
+        self.assertIn("in_progress", str(todo))
 
     def test_todo_with_note(self):
         """Should link a todo to a note."""
