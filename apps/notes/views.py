@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.request import Request
 from django.core.exceptions import ValidationError
+from typing import Any
 
 from .models import Note
 from .serializers import NoteSerializer
@@ -27,7 +29,7 @@ class NoteViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'updated_at', 'title', 'status']
     ordering = ['-created_at']  # Default: most recent first
 
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         Override destroy to handle ValidationError from Note.delete().
         """

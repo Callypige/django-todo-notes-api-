@@ -32,10 +32,10 @@ class Note(models.Model):
         verbose_name = 'Note'
         verbose_name_plural = 'Notes'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs) -> None:
         """
         Prevent deletion if this note has associated todos.
         Raises ValidationError if todos exist.
@@ -47,7 +47,7 @@ class Note(models.Model):
             )
         super().delete(*args, **kwargs)
 
-    def update_status_from_todos(self):
+    def update_status_from_todos(self) -> bool:
         """
         Automatically update the note's status based on associated todos:
         - COMPLETED: if all todos are completed

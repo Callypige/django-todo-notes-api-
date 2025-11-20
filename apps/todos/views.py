@@ -1,6 +1,7 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.request import Request
 
 from .models import Todo
 from .serializers import TodoSerializer
@@ -29,7 +30,7 @@ class TodoViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="by-note")
     @extend_schema(summary="List todos linked to a note", description="Return all todos attached to the given note id.")
-    def by_note(self, request):
+    def by_note(self, request: Request) -> Response:
         """Return todos filtered by note id."""
         note_param = request.query_params.get("note")
         if note_param is None:
