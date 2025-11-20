@@ -1,6 +1,7 @@
 from django.db import models
-from django.utils import timezone
 from django.core.exceptions import ValidationError
+
+from apps.core.models import TimestampedModel
 
 
 class NoteStatus(models.TextChoices):
@@ -11,7 +12,7 @@ class NoteStatus(models.TextChoices):
     ARCHIVED = 'archived', 'Archived'
 
 
-class Note(models.Model):
+class Note(TimestampedModel):
     """
     A note is a piece of content that can be created, read, updated, and deleted.
     """
@@ -24,8 +25,6 @@ class Note(models.Model):
         default=NoteStatus.ACTIVE,
         help_text="Status automatically updated based on associated todos"
     )
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']

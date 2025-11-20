@@ -1,8 +1,9 @@
 from django.db import models
-from django.utils import timezone
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from typing import Any
+
+from apps.core.models import TimestampedModel
 
 class TodoStatus(models.TextChoices):
     """Enum for the status of a todo"""
@@ -10,7 +11,7 @@ class TodoStatus(models.TextChoices):
     IN_PROGRESS = 'in_progress'
     COMPLETED = 'completed'
 
-class Todo(models.Model):
+class Todo(TimestampedModel):
     """
     A todo is a task that can be created, read, updated, and deleted.
     """
@@ -29,8 +30,6 @@ class Todo(models.Model):
         blank=True,
         related_name='todos'
     )
-    created_at = models.DateTimeField(default=timezone.now)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']

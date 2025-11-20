@@ -119,4 +119,3 @@ class Command(BaseCommand):
                 f"Todos créés: {created_todos}"
             )
         )
-

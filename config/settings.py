@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
 
     # Local apps
+    'apps.core',
     'apps.todos',
     'apps.notes',
 ]
