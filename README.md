@@ -25,6 +25,8 @@ python manage.py seed_demo
 python manage.py runserver
 ```
 
+> 💡 Variables d'environnement : voir `.env.example` pour la configuration
+
 Accéder à l'API : **http://localhost:8000**
 
 > ⚠️ Le serveur Docker affiche `0.0.0.0:8000` mais utilisez `localhost:8000` dans votre navigateur
