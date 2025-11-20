@@ -156,6 +156,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'config.api.exceptions.custom_exception_handler',
 }
 
 SPECTACULAR_SETTINGS = {
