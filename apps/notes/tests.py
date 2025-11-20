@@ -64,10 +64,10 @@ class NoteSerializerTest(TestCase):
 
 
 class NoteViewSetTest(APITestCase):
-    """Tests for the Note API endpoints"""
+    """Integration tests for the Note API endpoints."""
 
     def setUp(self):
-        """Configuration initial for the tests"""
+        """Initial setup for each API test."""
         self.note1 = Note.objects.create(
             title="Note 1",
             content="Contenu 1"
@@ -146,8 +146,8 @@ class NoteViewSetTest(APITestCase):
 
     def test_get_todos_for_note(self):
         """Test the get_todos action to retrieve the todos of a note"""
-        todo1 = Todo.objects.create(title="Todo 1", note=self.note1)
-        todo2 = Todo.objects.create(title="Todo 2", note=self.note1)
+        Todo.objects.create(title="Todo 1", note=self.note1)
+        Todo.objects.create(title="Todo 2", note=self.note1)
         Todo.objects.create(title="Todo 3", note=self.note2)  # Todo of another note
         
         url = reverse('notes-get-todos', kwargs={'pk': self.note1.pk})
@@ -171,9 +171,20 @@ class NoteViewSetTest(APITestCase):
     def test_create_note_validation(self):
         """Test the validation during the creation"""
         url = reverse('notes-list')
-        # Test sans titre (requis)
+        # Missing title should trigger a validation error
         data = {'content': 'Contenu sans titre'}
         response = self.client.post(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('title', response.data)
+
+    def test_delete_note_sets_related_todos_to_null(self):
+        """Deleting a note should not delete todos but reset their FK."""
+        todo = Todo.objects.create(title="Todo lié", note=self.note1)
+
+        url = reverse('notes-detail', kwargs={'pk': self.note1.pk})
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        todo.refresh_from_db()
+        self.assertIsNone(todo.note)

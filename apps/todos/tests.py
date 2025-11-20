@@ -8,10 +8,10 @@ from apps.notes.models import Note
 
 
 class TodoModelTest(TestCase):
-    """Tests pour le modèle Todo"""
+    """Unit tests for the Todo model."""
 
     def test_create_todo(self):
-        """Test de création d'un todo"""
+        """Should create a Todo instance with all fields."""
         todo = Todo.objects.create(
             title="Test Todo",
             description="Description de test",
@@ -24,12 +24,12 @@ class TodoModelTest(TestCase):
         self.assertIsNotNone(todo.updated_at)
 
     def test_todo_default_status(self):
-        """Test du statut par défaut"""
+        """Should default status to pending when unspecified."""
         todo = Todo.objects.create(title="Todo sans statut")
         self.assertEqual(todo.status, TodoStatus.PENDING)
 
     def test_todo_str(self):
-        """Test de la méthode __str__"""
+        """Should render a readable string representation."""
         todo = Todo.objects.create(
             title="Ma Todo",
             status=TodoStatus.IN_PROGRESS
@@ -38,7 +38,7 @@ class TodoModelTest(TestCase):
         self.assertIn("In Progress", str(todo))
 
     def test_todo_with_note(self):
-        """Test de la relation avec une note"""
+        """Should link a todo to a note."""
         note = Note.objects.create(title="Note Test", content="Content")
         todo = Todo.objects.create(
             title="Todo avec note",
@@ -48,21 +48,21 @@ class TodoModelTest(TestCase):
         self.assertIn(todo, note.todos.all())
 
     def test_todo_without_note(self):
-        """Test d'un todo sans note (relation optionnelle)"""
+        """Should allow todos without a related note."""
         todo = Todo.objects.create(title="Todo sans note")
         self.assertIsNone(todo.note)
 
     def test_todo_ordering(self):
-        """Test de l'ordonnancement par date de création"""
+        """Should order todos with newest first."""
         todo1 = Todo.objects.create(title="Todo 1")
         todo2 = Todo.objects.create(title="Todo 2")
         todos = list(Todo.objects.all())
-        # La plus récente doit être en premier
+        # Newest entry must be first
         self.assertEqual(todos[0], todo2)
         self.assertEqual(todos[1], todo1)
 
     def test_todo_status_choices(self):
-        """Test des choix de statut"""
+        """Should respect the status enum choices."""
         todo = Todo.objects.create(
             title="Todo",
             status=TodoStatus.COMPLETED
@@ -72,10 +72,10 @@ class TodoModelTest(TestCase):
 
 
 class TodoSerializerTest(TestCase):
-    """Tests pour le serializer Todo"""
+    """Tests for the Todo serializer."""
 
     def test_serialize_todo(self):
-        """Test de sérialisation d'un todo"""
+        """Should serialize a todo instance to JSON-friendly data."""
         from .serializers import TodoSerializer
         note = Note.objects.create(title="Note", content="Content")
         todo = Todo.objects.create(
@@ -96,7 +96,7 @@ class TodoSerializerTest(TestCase):
         self.assertIn('updated_at', data)
 
     def test_deserialize_todo(self):
-        """Test de désérialisation pour créer un todo"""
+        """Should deserialize payloads and create a todo."""
         from .serializers import TodoSerializer
         note = Note.objects.create(title="Note", content="Content")
         data = {
@@ -113,10 +113,10 @@ class TodoSerializerTest(TestCase):
 
 
 class TodoViewSetTest(APITestCase):
-    """Tests pour les endpoints API de Todo"""
+    """Integration tests for the Todo API endpoints."""
 
     def setUp(self):
-        """Configuration initiale pour les tests"""
+        """Initial setup for each test."""
         self.note = Note.objects.create(
             title="Note Test",
             content="Content"
@@ -134,7 +134,7 @@ class TodoViewSetTest(APITestCase):
         )
 
     def test_list_todos(self):
-        """Test de la liste des todos"""
+        """Should list todos with pagination metadata."""
         url = reverse('todos-list')
         response = self.client.get(url)
         
@@ -143,7 +143,7 @@ class TodoViewSetTest(APITestCase):
         self.assertEqual(response.data['results'][0]['title'], "Todo 2")  # Plus récent en premier
 
     def test_retrieve_todo(self):
-        """Test de récupération d'un todo"""
+        """Should fetch a single todo."""
         url = reverse('todos-detail', kwargs={'pk': self.todo1.pk})
         response = self.client.get(url)
         
@@ -153,7 +153,7 @@ class TodoViewSetTest(APITestCase):
         self.assertEqual(response.data['note'], self.note.pk)
 
     def test_create_todo(self):
-        """Test de création d'un todo via API"""
+        """Should allow creating a todo via API."""
         url = reverse('todos-list')
         data = {
             'title': 'Nouveau Todo',
@@ -168,7 +168,7 @@ class TodoViewSetTest(APITestCase):
         self.assertEqual(Todo.objects.count(), 3)
 
     def test_create_todo_without_note(self):
-        """Test de création d'un todo sans note"""
+        """Should accept todos without an associated note."""
         url = reverse('todos-list')
         data = {
             'title': 'Todo sans note',
@@ -181,7 +181,7 @@ class TodoViewSetTest(APITestCase):
         self.assertEqual(Todo.objects.count(), 3)
 
     def test_update_todo(self):
-        """Test de mise à jour d'un todo"""
+        """Should fully update a todo."""
         url = reverse('todos-detail', kwargs={'pk': self.todo1.pk})
         data = {
             'title': 'Todo Modifié',
@@ -198,7 +198,7 @@ class TodoViewSetTest(APITestCase):
         self.assertEqual(self.todo1.status, TodoStatus.COMPLETED)
 
     def test_partial_update_todo_status(self):
-        """Test de mise à jour partielle du statut"""
+        """Should partially update only the status field."""
         url = reverse('todos-detail', kwargs={'pk': self.todo1.pk})
         data = {'status': TodoStatus.COMPLETED}
         response = self.client.patch(url, data, format='json')
@@ -207,11 +207,11 @@ class TodoViewSetTest(APITestCase):
         self.assertEqual(response.data['status'], TodoStatus.COMPLETED)
         self.todo1.refresh_from_db()
         self.assertEqual(self.todo1.status, TodoStatus.COMPLETED)
-        # Le titre ne doit pas être modifié
+        # Title must remain untouched
         self.assertEqual(self.todo1.title, 'Todo 1')
 
     def test_delete_todo(self):
-        """Test de suppression d'un todo"""
+        """Should delete a todo."""
         url = reverse('todos-detail', kwargs={'pk': self.todo1.pk})
         response = self.client.delete(url)
         
@@ -220,7 +220,7 @@ class TodoViewSetTest(APITestCase):
         self.assertFalse(Todo.objects.filter(pk=self.todo1.pk).exists())
 
     def test_todo_with_note_relationship(self):
-        """Test de la relation todo-note via API"""
+        """Should persist the note relationship through the API."""
         url = reverse('todos-list')
         data = {
             'title': 'Todo avec note',
@@ -234,9 +234,9 @@ class TodoViewSetTest(APITestCase):
         self.assertIn(todo, self.note.todos.all())
 
     def test_create_todo_validation(self):
-        """Test de validation lors de la création"""
+        """Should validate required fields."""
         url = reverse('todos-list')
-        # Test sans titre (requis)
+        # Missing title should trigger validation errors
         data = {'status': TodoStatus.PENDING}
         response = self.client.post(url, data, format='json')
         
@@ -244,7 +244,7 @@ class TodoViewSetTest(APITestCase):
         self.assertIn('title', response.data)
 
     def test_todo_status_choices_validation(self):
-        """Test de validation des choix de statut"""
+        """Should reject invalid status values."""
         url = reverse('todos-list')
         data = {
             'title': 'Todo',
@@ -254,3 +254,31 @@ class TodoViewSetTest(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('status', response.data)
+
+    def test_create_todo_with_unknown_note(self):
+        """Should fail when the note foreign key does not exist."""
+        url = reverse('todos-list')
+        data = {
+            'title': 'Todo orphelin',
+            'note': 99999,
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('note', response.data)
+
+    def test_reassign_todo_to_another_note(self):
+        """Should allow reassigning a todo to another note."""
+        new_note = Note.objects.create(title="Autre note", content="Texte")
+        url = reverse('todos-detail', kwargs={'pk': self.todo1.pk})
+        data = {
+            'note': new_note.pk,
+            'title': self.todo1.title,
+            'description': self.todo1.description,
+            'status': self.todo1.status,
+        }
+        response = self.client.put(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.todo1.refresh_from_db()
+        self.assertEqual(self.todo1.note, new_note)
