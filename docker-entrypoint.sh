@@ -6,13 +6,13 @@ echo "🚀 Starting Django Todo Notes API..."
 echo "⏳ Waiting for system to be ready..."
 sleep 2
 
-# Migrate the database
+# Appliquer les migrations
 echo "📦 Applying database migrations..."
 python manage.py migrate --noinput
 
-# Create a superuser if needed (non-interactive mode)
+# Créer un superuser si nécessaire (mode non-interactif)
 echo "👤 Creating superuser if needed..."
-python manage.py shell << EOF
+python manage.py shell << 'EOF'
 from django.contrib.auth import get_user_model
 User = get_user_model()
 if not User.objects.filter(username='admin').exists():
@@ -22,13 +22,13 @@ else:
     print('ℹ️  Superuser already exists')
 EOF
 
-# Load demo data if the variable is set
+# Charger les données de démonstration si la variable est définie
 if [ "$LOAD_DEMO_DATA" = "true" ]; then
     echo "📊 Loading demo data..."
     python manage.py seed_demo || echo "⚠️  Demo data already exists or command not available"
 fi
 
-# Collect static files (for production)
+# Collecter les fichiers statiques (pour production)
 if [ "$COLLECT_STATIC" = "true" ]; then
     echo "📦 Collecting static files..."
     python manage.py collectstatic --noinput
@@ -37,5 +37,5 @@ fi
 echo "✅ Initialization complete!"
 echo "🌐 Starting server on 0.0.0.0:8000..."
 
-# Execute the command passed as argument
+# Exécuter la commande passée en argument
 exec "$@"
