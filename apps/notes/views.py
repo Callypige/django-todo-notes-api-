@@ -1,4 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from django.core.exceptions import ValidationError
 
 from .models import Note
 from .serializers import NoteSerializer
@@ -17,3 +19,21 @@ class NoteViewSet(viewsets.ModelViewSet):
 
     queryset = Note.objects.prefetch_related("todos").all()
     serializer_class = NoteSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Override destroy to handle ValidationError from Note.delete().
+        """
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ValidationError as e:
+            return Response(
+                {
+                    "detail": str(e.message) if hasattr(e, 'message') else str(e),
+                    "code": "note_has_todos",
+                    "errors": {"note": [str(e.message) if hasattr(e, 'message') else str(e)]}
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )

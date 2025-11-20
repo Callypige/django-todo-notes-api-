@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 class TodoStatus(models.TextChoices):
     """Enum for the status of a todo"""
@@ -34,3 +36,21 @@ class Todo(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.status}"
+
+
+@receiver(post_save, sender=Todo)
+def update_note_status_on_todo_save(sender, instance, **kwargs):
+    """
+    Signal to update the note's status when a todo is created or updated.
+    """
+    if instance.note:
+        instance.note.update_status_from_todos()
+
+
+@receiver(post_delete, sender=Todo)
+def update_note_status_on_todo_delete(sender, instance, **kwargs):
+    """
+    Signal to update the note's status when a todo is deleted.
+    """
+    if instance.note:
+        instance.note.update_status_from_todos()
