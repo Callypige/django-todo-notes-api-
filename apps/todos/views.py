@@ -19,6 +19,13 @@ class TodoViewSet(viewsets.ModelViewSet):
 
     queryset = Todo.objects.select_related("note").all()
     serializer_class = TodoSerializer
+    
+    # Search by title and description
+    search_fields = ['title', 'description']
+    
+    # Sorting by creation date, update date, title, status
+    ordering_fields = ['created_at', 'updated_at', 'title', 'status']
+    ordering = ['-created_at']  # Default: most recent first
 
     @action(detail=False, methods=["get"], url_path="by-note")
     @extend_schema(summary="List todos linked to a note", description="Return all todos attached to the given note id.")

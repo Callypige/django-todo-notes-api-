@@ -19,6 +19,13 @@ class NoteViewSet(viewsets.ModelViewSet):
 
     queryset = Note.objects.prefetch_related("todos").all()
     serializer_class = NoteSerializer
+    
+    # Search by title and content
+    search_fields = ['title', 'content']
+    
+    # Sorting by creation date, update date, title, status
+    ordering_fields = ['created_at', 'updated_at', 'title', 'status']
+    ordering = ['-created_at']  # Default: most recent first
 
     def destroy(self, request, *args, **kwargs):
         """
