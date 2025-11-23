@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 def _build_payload(
@@ -44,7 +44,7 @@ def custom_exception_handler(exc, context):
         response.data = _build_payload(detail=detail, code=code, errors=errors)
         return response
 
-    logger.exception("Unhandled exception in API layer", exc_info=exc)
+    logger.error("Unhandled exception in API layer", exc_info=exc)
 
     return Response(
         _build_payload(detail="Internal server error", code="server_error"),
