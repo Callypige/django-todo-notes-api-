@@ -62,3 +62,6 @@ htmlcov/
 *.tmp
 *.bak
 *.swp
+
+# Personal notes (not for repo)
+ARCHITECTURE_CHEATSHEET.md
