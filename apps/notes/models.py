@@ -1,7 +1,12 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 from django.core.exceptions import ValidationError
 
 from apps.core.models import TimestampedModel
+
+if TYPE_CHECKING:
+    from apps.todos.models import Todo  # imported only for type checking
 
 
 class NoteStatus(models.TextChoices):
@@ -11,20 +16,24 @@ class NoteStatus(models.TextChoices):
     COMPLETED = 'completed', 'Completed'
     ARCHIVED = 'archived', 'Archived'
 
-
 class Note(TimestampedModel):
     """
     A note is a piece of content that can be created, read, updated, and deleted.
     """
     objects = models.Manager()
+    
     title = models.CharField(max_length=200)
     content = models.TextField()
+    
     status = models.CharField(
         max_length=20,
         choices=NoteStatus.choices,
         default=NoteStatus.ACTIVE,
         help_text="Status automatically updated based on associated todos"
     )
+    
+    if TYPE_CHECKING:
+        todos: models.QuerySet['Todo']
 
     class Meta:
         ordering = ['-created_at']
@@ -32,6 +41,7 @@ class Note(TimestampedModel):
         verbose_name_plural = 'Notes'
 
     def __str__(self) -> str:
+
         return self.title
 
     def delete(self, *args, **kwargs) -> None:
