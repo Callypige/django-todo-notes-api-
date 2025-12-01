@@ -1,12 +1,7 @@
-from typing import TYPE_CHECKING
-
 from django.db import models
 from django.core.exceptions import ValidationError
 
 from apps.core.models import TimestampedModel
-
-if TYPE_CHECKING:
-    from apps.todos.models import Todo  # imported only for type checking
 
 
 class NoteStatus(models.TextChoices):
@@ -15,6 +10,7 @@ class NoteStatus(models.TextChoices):
     IN_PROGRESS = 'in_progress', 'In Progress'
     COMPLETED = 'completed', 'Completed'
     ARCHIVED = 'archived', 'Archived'
+
 
 class Note(TimestampedModel):
     """
@@ -31,9 +27,6 @@ class Note(TimestampedModel):
         default=NoteStatus.ACTIVE,
         help_text="Status automatically updated based on associated todos"
     )
-    
-    if TYPE_CHECKING:
-        todos: models.QuerySet['Todo']
 
     class Meta:
         ordering = ['-created_at']
@@ -49,9 +42,11 @@ class Note(TimestampedModel):
         Prevent deletion if this note has associated todos.
         Raises ValidationError if todos exist.
         """
-        if self.todos.exists():
+        todos_count = getattr(self, 'todos', None)
+        if todos_count and todos_count.exists():
+            count = todos_count.count()
             raise ValidationError(
-                f"Cannot delete note '{self.title}' because it has {self.todos.count()} associated todo(s). "
+                f"Cannot delete note '{self.title}' because it has {count} associated todo(s). "
                 "Please delete or unlink the todos first."
             )
         super().delete(*args, **kwargs)
@@ -63,40 +58,40 @@ class Note(TimestampedModel):
         - IN_PROGRESS: if at least one todo is in progress
         - ACTIVE: if there are pending todos
         - ARCHIVED: no change if already archived (manual status)
+        
+        Returns True if status was changed, False otherwise.
         """
         # Don't auto-update archived notes
         if self.status == NoteStatus.ARCHIVED:
             return False
 
-        todos = self.todos.all()
-        
-        # No todos associated
-        if not todos.exists():
-            if self.status != NoteStatus.ACTIVE:
-                self.status = NoteStatus.ACTIVE
-                self.save(update_fields=['status', 'updated_at'])
-                return True
-            return False
-
         # Import TodoStatus here to avoid circular import
         from apps.todos.models import TodoStatus
         
-        todo_statuses = list(todos.values_list('status', flat=True))
+        todos = getattr(self, 'todos', None)
+        if not todos:
+            return False
         
-        # All todos completed
-        if all(s == TodoStatus.COMPLETED for s in todo_statuses):
+        # No todos associated - reset to ACTIVE
+        if not todos.exists():
+            return self._update_status(NoteStatus.ACTIVE)
+        
+        # Determine new status based on todo statuses
+        todo_statuses = todos.values_list('status', flat=True)
+        
+        if all(status == TodoStatus.COMPLETED for status in todo_statuses):
             new_status = NoteStatus.COMPLETED
-        # At least one in progress
         elif TodoStatus.IN_PROGRESS in todo_statuses:
             new_status = NoteStatus.IN_PROGRESS
-        # Has pending todos
         else:
             new_status = NoteStatus.ACTIVE
 
+        return self._update_status(new_status)
+    
+    def _update_status(self, new_status: str) -> bool:
+        """Helper method to update status if changed."""
         if self.status != new_status:
             self.status = new_status
             self.save(update_fields=['status', 'updated_at'])
             return True
-        
         return False
-
