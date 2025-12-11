@@ -15,13 +15,15 @@ urlpatterns = [
     path('api/health/', health_check, name='health-check'),
     
     # Documentation API 
-    path('', RedirectView.as_view(url='/api/docs/', permanent=False)), # Redirect to the swagger UI
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
     
     # API REST 
     path('api/', include('apps.notes.urls')),
     path('api/', include('apps.todos.urls')),
+    
+    # Interface HTML
+    path('', include('apps.interface.urls')),
 ]

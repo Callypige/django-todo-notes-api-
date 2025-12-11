@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.todos',
     'apps.notes',
+    'apps.interface',
 ]
 
 MIDDLEWARE = [
