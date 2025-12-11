@@ -1,0 +1,163 @@
+/* === THEME VARIABLES === */
+
+/* Light theme (default) */
+[data-theme="light"] {
+    --bg-primary: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-todo: #f8f9fa;
+    --text-primary: #2c3e50;
+    --text-secondary: #666;
+    --text-muted: #7f8c8d;
+    --border-color: #e9ecef;
+    --shadow: rgba(0,0,0,0.1);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-card: #2d2d2d;
+    --bg-todo: #3a3a3a;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --text-muted: #888;
+    --border-color: #404040;
+    --shadow: rgba(0,0,0,0.3);
+}
+
+/* === BASE STYLES === */
+
+body { 
+    font-family: Arial, sans-serif; 
+    max-width: 900px; 
+    margin: 0 auto; 
+    padding: 20px; 
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background 0.3s, color 0.3s;
+}
+
+/* === HEADER === */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h1 { 
+    color: var(--text-primary); 
+    margin: 0;
+}
+
+/* === THEME SWITCHER === */
+
+.theme-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.theme-btn:hover {
+    background: var(--bg-todo);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.theme-btn:active {
+    transform: translateY(0);
+}
+
+/* === NOTES === */
+
+.note-card { 
+    background: var(--bg-card); 
+    padding: 20px; 
+    margin-bottom: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 8px var(--shadow); 
+}
+
+.note-header { 
+    border-bottom: 2px solid var(--border-color); 
+    padding-bottom: 10px; 
+    margin-bottom: 15px; 
+}
+
+.note-title { 
+    margin: 0 0 5px 0; 
+    color: var(--text-primary); 
+}
+
+.note-content { 
+    color: var(--text-secondary); 
+    margin: 10px 0; 
+}
+
+/* === BADGES === */
+
+.badge { 
+    display: inline-block; 
+    padding: 4px 12px; 
+    border-radius: 12px; 
+    font-size: 11px; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+}
+
+.badge.active { background: #3498db; color: white; }
+.badge.in_progress { background: #f39c12; color: white; }
+.badge.completed { background: #2ecc71; color: white; }
+.badge.archived { background: #95a5a6; color: white; }
+.badge.pending { background: #e74c3c; color: white; }
+
+/* === TODOS === */
+
+.todos-section { 
+    margin-top: 15px; 
+    padding-top: 15px; 
+    border-top: 1px solid var(--border-color); 
+}
+
+.todos-section h4 { 
+    margin: 0 0 10px 0; 
+    color: var(--text-muted); 
+    font-size: 14px; 
+}
+
+.todo-item { 
+    background: var(--bg-todo); 
+    padding: 10px 15px; 
+    margin-bottom: 8px; 
+    border-radius: 5px; 
+    border-left: 3px solid #3498db; 
+}
+
+.todo-item h5 { 
+    margin: 0 0 5px 0; 
+    font-size: 14px; 
+    color: var(--text-primary); 
+}
+
+.todo-item p { 
+    margin: 0; 
+    font-size: 13px; 
+    color: var(--text-secondary); 
+}
+
+/* === EMPTY STATE === */
+
+.empty { 
+    text-align: center; 
+    color: var(--text-muted); 
+    padding: 40px; 
+}
